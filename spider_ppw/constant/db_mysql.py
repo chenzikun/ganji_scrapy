@@ -1,5 +1,6 @@
 
 from scrapy.conf import settings
+from datetime import datetime
 import pymysql
 
 
@@ -31,6 +32,8 @@ class MysqlDatabase(metaclass=Singleton):
 
         self.shop_state_map = {'新铺': 1, '空铺': 2, '营业中': 3}
 
+        self.num = 0
+
     def mysql_conn(self):
         return pymysql.connect(**settings.get('MYSQL_CONFIG'))
 
@@ -46,4 +49,9 @@ class MysqlDatabase(metaclass=Singleton):
             return cursor.fetchall()
 
     def insert(self, sql):
+        self.num += 1
+        print('成功写入第{}条记录：{}'.format(self.num, self.date_time()))
         return self.insert_mysql(sql)
+
+    def date_time(self):
+        return datetime.now().strftime('%H:%M:%S')

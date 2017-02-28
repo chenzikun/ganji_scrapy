@@ -51,7 +51,7 @@ class CustomRedisPipeline(RedisPipeline):
         self.num += self.num + 1
         _item = self.handle_item(item)
         sql = self.format_spl(_item)
-        print('成功写入第{}条记录：{}'.format(self.num, self.date_time()))
+
         print('[INFO]: ')
 
         if isinstance(item, SpiderPpwItemTransfer):
