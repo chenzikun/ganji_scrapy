@@ -51,7 +51,7 @@ class CustomRedisPipeline(RedisPipeline):
         self.num += self.num + 1
         _item = self.handle_item(item)
         sql = self.format_spl(_item)
-
+        self.db.insert_mysql(sql)
         print('[INFO]: ')
 
         if isinstance(item, SpiderPpwItemTransfer):
