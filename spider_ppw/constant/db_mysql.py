@@ -41,7 +41,7 @@ class MysqlDatabase(metaclass=Singleton):
         conn = self.mysql_conn()
         with conn.cursor() as cursor:
             cursor.execute(sql)
-            conn.commit()
+        conn.commit()
 
     def query(self, sql):
         with self.mysql_conn().cursor() as cursor:
