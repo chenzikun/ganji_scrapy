@@ -97,7 +97,6 @@ class CustomRedisPipeline(RedisPipeline):
 
     def handle_transfer_item(self, item, spider):
         print('#' * 5, '[转店]', item['citycode'], item['create_time'])
-        print(item._values)
         return item
 
     def handle_rent_out_item(self, item, spider):

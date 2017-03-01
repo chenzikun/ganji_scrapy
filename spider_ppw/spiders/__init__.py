@@ -51,8 +51,8 @@ class GanJiSpider(scrapy.Spider):
             for li in doc('.pageLink.clearfix')('li').items():
                 list_url = li('a').attr('href')
                 if list_url not in self.urls and list_url is not None:
-                    # 只采集前10个列表页
-                    if li('span').text() <= '10':
+                    # 只采集前2个列表页
+                    if li('span').text() <= '2':
                         self.urls.add(self.domain + list_url)
                         yield scrapy.Request(self.domain + list_url, callback=self.list_page_parse)
 
