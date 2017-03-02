@@ -40,7 +40,7 @@ class GanJiSpider(scrapy.Spider):
                     for url in url_division:
                         yield scrapy.Request(url, callback=self.list_page_parse)
         else:
-            yield scrapy.Request(response._url, callback=self.list_page_parse)
+            yield scrapy.Request(response.request._url, callback=self.list_page_parse)
 
     def list_page_parse(self, response):
         if 'sorry' in response._url:
@@ -66,7 +66,7 @@ class GanJiSpider(scrapy.Spider):
                 if '/a1s2/' in response._url:
                     yield scrapy.Request(detail_url, callback=self.rent_in_detail_page_parse)
         else:
-            yield scrapy.Request(response._url, callback=self.list_page_parse)
+            yield scrapy.Request(response.request._url, callback=self.list_page_parse)
 
     def transfer_detail_page_parse(self, response):
         if 'sorry' in response._url:
@@ -106,7 +106,7 @@ class GanJiSpider(scrapy.Spider):
             self.log('获取详情页： {url}'.format(url=url))
             yield item
         else:
-            yield scrapy.Request(response._url, callback=self.transfer_detail_page_parse)
+            yield scrapy.Request(response.request._url, callback=self.transfer_detail_page_parse)
 
     def rent_out_detail_page_parse(self, response):
         if 'sorry' in response._url:
@@ -145,7 +145,7 @@ class GanJiSpider(scrapy.Spider):
             self.log('获取详情页： {url}'.format(url=url))
             yield item
         else:
-            yield scrapy.Request(response._url, callback=self.rent_out_detail_page_parse)
+            yield scrapy.Request(response.request._url, callback=self.rent_out_detail_page_parse)
 
     def rent_in_detail_page_parse(self, response):
         if 'sorry' in response._url:
@@ -184,4 +184,4 @@ class GanJiSpider(scrapy.Spider):
             self.log('获取详情页： {url}'.format(url=url))
             yield item
         else:
-            yield scrapy.Request(response._url, callback=self.rent_in_detail_page_parse)
+            yield scrapy.Request(response.request._url, callback=self.rent_in_detail_page_parse)
