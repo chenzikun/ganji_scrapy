@@ -3,7 +3,6 @@ os.environ.setdefault('SCRAPY_SETTINGS_MODULE', 'spider_ppw.settings')
 
 from datetime import datetime
 from atexit import register
-
 from scrapy.crawler import CrawlerProcess
 from scrapy.conf import settings
 from spider_ppw.spiders import GanJiSpider
