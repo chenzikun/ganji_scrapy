@@ -48,20 +48,22 @@ class CustomRedisPipeline(RedisPipeline):
         return deferToThread(self._process_item, item, spider)
 
     def distribute_item(self, item, spider):
-        self.num += self.num + 1
+        self.num += 1
         _item = self.handle_item(item)
-        sql = self.format_spl(_item)
-        self.db.insert_mysql(sql)
-        print('[INFO]: ')
-
-        if isinstance(item, SpiderPpwItemTransfer):
-            self.handle_transfer_item(_item, spider)
-        if isinstance(item, SpiderPpwItemRentOut):
-            self.handle_rent_out_item(_item, spider)
-        if isinstance(item, SpiderPpwItemRentIn):
-            self.handle_rent_in_item(_item, spider)
+        if _item:
+            sql = self.format_spl(_item)
+            self.db.insert_mysql(sql)
+            print('[INFO]: ')
+            if isinstance(item, SpiderPpwItemTransfer):
+                self.handle_transfer_item(_item, spider)
+            if isinstance(item, SpiderPpwItemRentOut):
+                self.handle_rent_out_item(_item, spider)
+            if isinstance(item, SpiderPpwItemRentIn):
+                self.handle_rent_in_item(_item, spider)
 
     def handle_item(self, item):
+        if any(map(lambda x: x in item['title'], self.db.title_filter)):
+            return None
         if item['area'] != '面议':
             item['area'] = item['area'][:-1]
         item['citycode'] = self.db.city_map.get(item['citycode'], 0)

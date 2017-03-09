@@ -14,25 +14,37 @@ from ..constant.db_mysql import MysqlDatabase
 
 
 class GanJiSpider(scrapy.Spider):
+    """
+    采集数据subdomain, name, code 的解决方式
+    赶集 name --> sub_domain
+    公司 name --> code (table district)
+    为了去重的提高检索效率，构建 code --> urls (table spiderdb)
+    """
 
     name = 'ganji'
 
     db = MysqlDatabase()
 
-    domain = 'http://sz.ganji.com'
+    domain_str = 'http://{}.ganji.com'
 
     start_urls = ['http://www.ganji.com/index.htm']
 
     urls = set()
 
+    # 建立subdomain --> code，采取城市列表时添加数据
+    sub_domain_to_city_code_map = {}
+
+    # 采集列表页准备
     def parse(self, response):
         if response.status == 200 or 301:
             doc = PyQuery(response.body)
             for a in doc('.all-city')('a').items():
                 link = a.attr('href')
                 city = str(a.text())
-                if self.db.city_map.get(city):
+                city_code = self.db.city_map.get(city)
+                if city_code:
                     sub_domain = link.split('//')[1].split('.')[0]
+                    self.sub_domain_to_city_code_map[sub_domain] = city_code
                     url_transfer = 'http://{}.ganji.com/fang6/a1c1/'.format(sub_domain)
                     url_rent_out = 'http://{}.ganji.com/fang6/a1c2/'.format(sub_domain)
                     url_rent_in = 'http://{}.ganji.com/fang6/a1s2/'.format(sub_domain)
@@ -42,7 +54,10 @@ class GanJiSpider(scrapy.Spider):
         else:
             yield scrapy.Request(response.request._url, callback=self.list_page_parse)
 
+    # 采集列表页
     def list_page_parse(self, response):
+        sub_domain = response.request._url.split('.')[0].strip('http://')
+        city_code = self.sub_domain_to_city_code_map.get(sub_domain)
         if 'sorry' in response._url:
             yield scrapy.Request(response.request._url, callback=self.list_page_parse)
         elif response.status == 200 or 301:
@@ -53,25 +68,29 @@ class GanJiSpider(scrapy.Spider):
                 if list_url not in self.urls and list_url is not None:
                     # 只采集前2个列表页
                     if li('span').text() <= '2':
-                        self.urls.add(self.domain + list_url)
-                        yield scrapy.Request(self.domain + list_url, callback=self.list_page_parse)
+                        target_url = self.domain_str.format(sub_domain) + list_url
+                        self.urls.add(target_url)
+                        yield scrapy.Request(target_url, callback=self.list_page_parse)
 
             # 详情页
             for dl in doc('.listBox.list-img-style1')('dl').items():
-                detail_url = self.domain + dl('a').attr('href')
-                if '/a1c1/' in response._url:
-                    yield scrapy.Request(detail_url, callback=self.transfer_detail_page_parse)
-                if '/a1c2/' in response._url:
-                    yield scrapy.Request(detail_url, callback=self.rent_out_detail_page_parse)
-                if '/a1s2/' in response._url:
-                    yield scrapy.Request(detail_url, callback=self.rent_in_detail_page_parse)
+                detail_url = self.domain_str.format(sub_domain) + dl('a').attr('href')
+                city_urls_set = self.db.url_map.get(city_code, set())
+                if detail_url not in city_urls_set:
+                    if '/a1c1/' in response.request._url:
+                        yield scrapy.Request(detail_url, callback=self.transfer_detail_page_parse)
+                    if '/a1c2/' in response.request._url:
+                        yield scrapy.Request(detail_url, callback=self.rent_out_detail_page_parse)
+                    if '/a1s2/' in response.request._url:
+                        yield scrapy.Request(detail_url, callback=self.rent_in_detail_page_parse)
         else:
             yield scrapy.Request(response.request._url, callback=self.list_page_parse)
 
+    # 采集转店详情页
     def transfer_detail_page_parse(self, response):
         if 'sorry' in response._url:
             yield scrapy.Request(response.request._url, callback=self.transfer_detail_page_parse)
-        elif response.status == 200 or 301:
+        try:
             doc = PyQuery(response.body)
             citycode = doc('.fc-city').text()
             create_time = doc('.f10.pr-5').text()
@@ -105,13 +124,14 @@ class GanJiSpider(scrapy.Spider):
 
             self.log('获取详情页： {url}'.format(url=url))
             yield item
-        else:
+        except:
             yield scrapy.Request(response.request._url, callback=self.transfer_detail_page_parse)
 
+    # 采集出租详情页
     def rent_out_detail_page_parse(self, response):
         if 'sorry' in response._url:
             yield scrapy.Request(response.request._url, callback=self.rent_out_detail_page_parse)
-        elif response.status == 200 or 301:
+        try:
             doc = PyQuery(response.body)
             citycode = doc('.fc-city').text()
             create_time = doc('.f10.pr-5').text()
@@ -144,13 +164,14 @@ class GanJiSpider(scrapy.Spider):
 
             self.log('获取详情页： {url}'.format(url=url))
             yield item
-        else:
+        except:
             yield scrapy.Request(response.request._url, callback=self.rent_out_detail_page_parse)
 
+    # 采集找店详情页
     def rent_in_detail_page_parse(self, response):
         if 'sorry' in response._url:
             yield scrapy.Request(response.request._url, callback=self.rent_in_detail_page_parse)
-        elif response.status == 200 or 301:
+        try:
             doc = PyQuery(response.body)
             citycode = doc('.fc-city').text()
             create_time = doc('.f10.pr-5').text()
@@ -183,5 +204,5 @@ class GanJiSpider(scrapy.Spider):
 
             self.log('获取详情页： {url}'.format(url=url))
             yield item
-        else:
+        except:
             yield scrapy.Request(response.request._url, callback=self.rent_in_detail_page_parse)

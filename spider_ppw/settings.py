@@ -28,7 +28,7 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-# DOWNLOAD_DELAY = 0.2
+DOWNLOAD_DELAY = 0.2
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
@@ -106,7 +106,8 @@ SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 # 确保所有的爬虫通过Redis去重
 DUPEFILTER_CLASS = 'scrapy_redis.dupefilter.RFPDupeFilter'
 # slave的ip为master的ip地址，主机需要关闭redis的保护模式
-REDIS_URL = 'redis://192.168.0.61:6379'
+#REDIS_URL = 'redis://192.168.0.61:6379'
+REDIS_URL = 'redis://127.0.0.1:6379'
 
 # mysql配置
 MYSQL_CONFIG = {'host': '192.168.1.253',
@@ -116,3 +117,11 @@ MYSQL_CONFIG = {'host': '192.168.1.253',
                 'db': 'xw',
                 'charset': 'utf8mb4'
                 }
+
+# MYSQL_CONFIG = {'host': '127.0.0.1',
+#                 'port': 3306,
+#                 'user': 'root',
+#                 'password': '',
+#                 'db': 'demo',
+#                 'charset': 'utf8mb4'
+#                 }
