@@ -1,8 +1,10 @@
 import os
 os.environ.setdefault('SCRAPY_SETTINGS_MODULE', 'spider_ppw.settings')
-
 from datetime import datetime
 from atexit import register
+
+import redis
+
 from scrapy.crawler import CrawlerProcess
 from scrapy.conf import settings
 from spider_ppw.spiders import GanJiSpider
@@ -25,4 +27,6 @@ if __name__ == '__main__':
 
 @register
 def _at_exit():
+    # redis_conn = redis.StrictRedis.from_url(settings.get('REDIS_URL'))
+    # redis_conn.flushdb()
     print('爬虫结束：{}'.format(date_time()))

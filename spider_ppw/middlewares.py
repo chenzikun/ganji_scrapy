@@ -79,7 +79,7 @@ class CustomHttpProxyMiddleware(HttpProxyMiddleware):
 
     def process_request(self, request, spider):
         # Set the location of the proxy
-        ip_instance = random.choice(ip_pond)
+        ip_instance = random.choice([])
         request.meta['proxy'] = "http//{}:{}".format(ip_instance.ip, ip_instance.port)
 
         # Use the following lines if your proxy requires authentication

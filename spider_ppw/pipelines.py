@@ -80,6 +80,8 @@ class CustomRedisPipeline(RedisPipeline):
                 item['suit'] = self.format_str(item['suit'])
         if item['rent'] == '面议':
             item['rent'] = 0
+        # if item['rent_unit']:
+        #     item['rent_unit'] = self.format_str(item['rent_unit'])
         if item['shop_name']:
             item['shop_name'] = self.format_str(item['shop_name'])
         if item['address']:

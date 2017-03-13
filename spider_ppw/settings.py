@@ -98,7 +98,7 @@ ITEM_PIPELINES = {
 # LOG_ENABLED默认为True
 # LOG_ENABLED = False
 # log_level， CRITICAL、 ERROR、WARNING、INFO、DEBUG
-LOG_LEVEL = 'ERROR'
+LOG_LEVEL = 'INFO'
 
 # redis
 # 启用Redis调度存储请求队列
@@ -118,10 +118,3 @@ MYSQL_CONFIG = {'host': '192.168.1.253',
                 'charset': 'utf8mb4'
                 }
 
-# MYSQL_CONFIG = {'host': '127.0.0.1',
-#                 'port': 3306,
-#                 'user': 'root',
-#                 'password': '',
-#                 'db': 'demo',
-#                 'charset': 'utf8mb4'
-#                 }

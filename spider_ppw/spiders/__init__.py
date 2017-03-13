@@ -102,7 +102,7 @@ class GanJiSpider(scrapy.Spider):
 
             sub_doc = list(doc('.basic-info-ul')('li').items())
             re_compile = re.compile(r'\s.{3}（')
-            rent_unit = 5 if rent == '面议' else \
+            rent_unit = 'Null' if rent == '面议' else \
                 self.db.rent_unit_map.get(re_compile.findall(sub_doc[0].text())[0].strip('（').strip(' '))
             area = sub_doc[1].text().split(' ')[1]
 
@@ -143,7 +143,7 @@ class GanJiSpider(scrapy.Spider):
 
             sub_doc = list(doc('.basic-info-ul')('li').items())
             re_compile = re.compile(r'\s.{3}（')
-            rent_unit = 5 if rent == '面议' else \
+            rent_unit = 'Null' if rent == '面议' else \
                 self.db.rent_unit_map.get(re_compile.findall(sub_doc[0].text())[0].strip('（').strip(' '))
             area = sub_doc[1].text().split(' ')[1]
             shop_state = sub_doc[2].text().split(' ')[1]
@@ -183,7 +183,7 @@ class GanJiSpider(scrapy.Spider):
 
             sub_doc = list(doc('.basic-info-ul')('li').items())
             re_compile = re.compile(r'\s.{3}（')
-            rent_unit = 5 if rent == '面议' else \
+            rent_unit = 'Null' if rent == '面议' else \
                 self.db.rent_unit_map.get(re_compile.findall(sub_doc[0].text())[0].strip('（').strip(' '))
             area = sub_doc[1].text().split(' ')[1]
             try:
