@@ -19,7 +19,7 @@ from scrapy.downloadermiddlewares.retry import RetryMiddleware
 
 # agent和ip池
 from .constant.useragent import AGENTS
-# from .constant.ip_pond import ip_pond
+from .constant.db import RedisDatabase
 
 
 class SpiderPpwSpiderMiddleware(object):
@@ -75,19 +75,23 @@ class CustomUserAgentMiddleware(UserAgentMiddleware):
         agent = random.choice(AGENTS)
         request.headers.setdefault(b'User-Agent', agent)
 
+
 class CustomHttpProxyMiddleware(HttpProxyMiddleware):
+
+    redis_db = RedisDatabase()
 
     def process_request(self, request, spider):
         # Set the location of the proxy
-        ip_instance = random.choice([])
-        request.meta['proxy'] = "http//{}:{}".format(ip_instance.ip, ip_instance.port)
-
-        # Use the following lines if your proxy requires authentication
-        proxy_user_pass = "USERNAME:PASSWORD"
-        # setup basic authentication for the proxy
-        encoded_user_pass = base64.encodestring(proxy_user_pass)
-        request.headers['Proxy-Authorization'] = 'Basic ' + encoded_user_pass
-
+        if self.redis_db.ip_pond():
+            ip_instance = random.choice(list(self.redis_db.ip_pond()))
+            request.meta['proxy'] = "http//{}:{}".format(ip_instance.ip, ip_instance.port)
+            # Use the following lines if your proxy requires authentication
+            proxy_user_pass = "USERNAME:PASSWORD"
+            # setup basic authentication for the proxy
+            encoded_user_pass = base64.encodestring(proxy_user_pass)
+            request.headers['Proxy-Authorization'] = 'Basic ' + encoded_user_pass
+        else:
+            pass
 
 class CookieMiddleware(RetryMiddleware):
     def __init__(self, settings, crawler):
@@ -111,15 +115,16 @@ class CookieMiddleware(RetryMiddleware):
             # else:
             # redisKeys.remove(elem)
 
-    # def process_response(self, request, response, spider):
+    def process_response(self, request, response, spider):
 
-        # """
-        # 下面的我删了，各位小伙伴可以尝试以下完成后面的工作
+        """
+        下面的我删了，各位小伙伴可以尝试以下完成后面的工作
 
-        # 你需要在这个位置判断cookie是否失效
+        你需要在这个位置判断cookie是否失效
 
-        # 然后进行相应的操作，比如更新cookie  删除不能用的账号
+        然后进行相应的操作，比如更新cookie  删除不能用的账号
 
-        # 写不出也没关系，不影响程序正常使用，
+        写不出也没关系，不影响程序正常使用，
 
-        # """
+        """
+        pass

@@ -6,7 +6,7 @@
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
 from .items import SpiderPpwItemTransfer, SpiderPpwItemRentOut, SpiderPpwItemRentIn
-from .constant.db_mysql import MysqlDatabase
+from .constant.db import MysqlDatabase
 
 from datetime import datetime
 from collections import OrderedDict

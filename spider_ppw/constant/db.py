@@ -2,7 +2,8 @@
 from scrapy.conf import settings
 from datetime import datetime
 import pymysql
-
+import redis
+import json
 
 class Singleton(type):
     def __init__(cls, *args, **kwargs):
@@ -74,3 +75,22 @@ class MysqlDatabase(metaclass=Singleton):
 
     def date_time(self):
         return datetime.now().strftime('%H:%M:%S')
+
+
+class RedisDatabase(metaclass=Singleton):
+
+    def redis_conn(self):
+        redis_conn_ = redis.StrictRedis.from_url(settings.get('REDIS_URL'))
+        return redis_conn_
+
+    def ip_pond(self):
+        result = json.loads(self.redis_conn().get('ip_pond').decode()) if self.redis_conn().get('ip_pond') else []
+        return result
+
+    def refresh_ip_pond(self, s):
+        self.redis_conn().delete('ip_pond')
+        self.dump('ip_pond', s)
+
+    def dump(self, key, value):
+        s = json.dumps(value)
+        self.redis_conn().set(key, s)

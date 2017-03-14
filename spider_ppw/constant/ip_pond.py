@@ -1,11 +1,17 @@
-from time import sleep
+# from time import sleep
 import requests
 import pyquery
+from multiprocessing import Process
+
+from .db import RedisDatabase
 
 
 class GetFreeProxy(object):
 
-    util = Utils()
+    def __init__(self):
+        self.util = Utils()
+
+        self.ip_pond = []
 
     # 快代理
     def free_proxy_first_source(self):
@@ -17,23 +23,23 @@ class GetFreeProxy(object):
 
     # 抓取代理66 http://www.66ip.cn/
     def free_proxy_second_source(self):
-        url_str = "http://m.66ip.cn/mo.php?sxb=&tqsl={}&port=&export=&ktip=&sxa=&submit=%CC%E1++%C8%A1&textarea="
-        urls = [url_str.format(i) for i in range(1, 100)]
-        for url in urls:
-            dom = self.util.get_dom(url)
-            ip, port=dom('body').text().split(':')
-            yield ip, port
+        url = "http://m.66ip.cn/mo.php?sxb=&tqsl=1&port=&export=&ktip=&sxa=&submit=%CC%E1++%C8%A1&textarea="
+        dom = self.util.get_dom(url)
+        ips=dom('body').text().split(' ')
+        for item in ips:
+            ip, port = item.split(':')
+            self.ip_pond.append((ip, port))
 
     # 有代理
     def free_proxy_third_source(self):
         url = "http://www.youdaili.net/Daili/http/"
         dom = self.util.get_dom(url)
         target_url = list(dom('.chunlist')('ul')('li').items())[0]('a').attr('href')
-        dom_ = self.util.get_dom(url)
+        dom_ = self.util.get_dom(target_url)
         ip_list = dom_('.content')('p')
         for item in ip_list.items():
             ip, port = item.text().split('@')[0].split(':')
-            yield ip, port
+            self.ip_pond.append((ip, port))
 
     # 抓取西刺代理 http://api.xicidaili.com/free2016.txt
     def free_proxy_fourth_source(self):
@@ -43,7 +49,7 @@ class GetFreeProxy(object):
         for item in ip_list:
             ip = list(item('th').items)[1]
             port = list(item('th').items)[2]
-            yield ip, port
+            self.ip_pond.append((ip, port))
 
     # 抓取全网代理ip
     def free_proxy_fifth_source(self):
@@ -54,6 +60,7 @@ class GetFreeProxy(object):
             text = ''.join(item.text() for item in td.items())
             ip, port = text.split(':')
             yield ip, port
+
 
 class Utils:
 
@@ -68,7 +75,23 @@ class Utils:
         return dom
 
 
-from atexit import register
-@register
-def _at_exit():
-    print('ip池采集完毕')
+class Manager():
+    def __init__(self):
+        self.free_proxy = GetFreeProxy()
+
+        self.redis_db = RedisDatabase()
+
+
+        self.target_list = [self.free_proxy.free_proxy_second_source(), self.free_proxy.free_proxy_third_source(),
+                            self.free_proxy.free_proxy_fourth_source(), self.free_proxy.free_proxy_fifth_source()]
+
+        self.create_ip()
+        self.redis_db.dump('ip_pond', self.free_proxy.ip_pond)
+
+
+    def create_ip(self):
+        process_list = [Process(target=item, args=()) for item in self.target_list]
+        for p in process_list:
+            p.start()
+        for p in process_list:
+            p.join()

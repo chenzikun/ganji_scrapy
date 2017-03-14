@@ -10,7 +10,7 @@ from pyquery import PyQuery
 
 
 from ..items import SpiderPpwItemTransfer, SpiderPpwItemRentOut, SpiderPpwItemRentIn
-from ..constant.db_mysql import MysqlDatabase
+from ..constant.db import MysqlDatabase
 
 
 class GanJiSpider(scrapy.Spider):
@@ -25,6 +25,8 @@ class GanJiSpider(scrapy.Spider):
 
     db = MysqlDatabase()
 
+    domain = "http://ganji.com"
+
     domain_str = 'http://{}.ganji.com'
 
     start_urls = ['http://www.ganji.com/index.htm']
@@ -36,7 +38,9 @@ class GanJiSpider(scrapy.Spider):
 
     # 采集列表页准备
     def parse(self, response):
-        if response.status == 200 or 301:
+        if 'sorry' in response._url:
+            yield scrapy.Request(response.request._url, callback=self.parse)
+        elif response.status == 200 or 301:
             doc = PyQuery(response.body)
             for a in doc('.all-city')('a').items():
                 link = a.attr('href')
@@ -52,7 +56,7 @@ class GanJiSpider(scrapy.Spider):
                     for url in url_division:
                         yield scrapy.Request(url, callback=self.list_page_parse)
         else:
-            yield scrapy.Request(response.request._url, callback=self.list_page_parse)
+            yield scrapy.Request(response.request._url, callback=self.parse)
 
     # 采集列表页
     def list_page_parse(self, response):
