@@ -50,6 +50,8 @@ class GanJiSpider(scrapy.Spider):
                     url_division = [url_transfer, url_rent_out, url_rent_in]
                     for url in url_division:
                         yield scrapy.Request(url, callback=self.list_page_parse)
+        elif response.status == 404:
+            return
         else:
             yield scrapy.Request(response.request._url, callback=self.parse)
 
@@ -59,6 +61,8 @@ class GanJiSpider(scrapy.Spider):
         city_code = self.sub_domain_to_city_code_map.get(sub_domain)
         if 'sorry' in response._url:
             yield scrapy.Request(response.request._url, callback=self.list_page_parse)
+        elif response.status == 404:
+            return
         elif response.status == 200 or 301:
             doc = PyQuery(response.body)
             # 翻页
@@ -82,14 +86,14 @@ class GanJiSpider(scrapy.Spider):
                         yield scrapy.Request(detail_url, callback=self.rent_out_detail_page_parse)
                     if '/a1s2/' in response.request._url:
                         yield scrapy.Request(detail_url, callback=self.rent_in_detail_page_parse)
-        else:
-            yield scrapy.Request(response.request._url, callback=self.list_page_parse)
 
     # 采集转店详情页
     def transfer_detail_page_parse(self, response):
         if 'sorry' in response._url:
             yield scrapy.Request(response.request._url, callback=self.transfer_detail_page_parse)
-        try:
+        elif response.status == 404:
+            return
+        elif response.status == 200 or 301:
             doc = PyQuery(response.body)
             citycode = doc('.fc-city').text()
             create_time = doc('.f10.pr-5').text()
@@ -123,14 +127,14 @@ class GanJiSpider(scrapy.Spider):
 
             self.log('获取详情页： {url}'.format(url=url))
             yield item
-        except:
-            yield scrapy.Request(response.request._url, callback=self.transfer_detail_page_parse)
 
     # 采集出租详情页
     def rent_out_detail_page_parse(self, response):
         if 'sorry' in response._url:
             yield scrapy.Request(response.request._url, callback=self.rent_out_detail_page_parse)
-        try:
+        elif response.status == 404:
+            return
+        elif response.status == 200 or 301:
             doc = PyQuery(response.body)
             citycode = doc('.fc-city').text()
             create_time = doc('.f10.pr-5').text()
@@ -163,14 +167,14 @@ class GanJiSpider(scrapy.Spider):
 
             self.log('获取详情页： {url}'.format(url=url))
             yield item
-        except:
-            yield scrapy.Request(response.request._url, callback=self.rent_out_detail_page_parse)
 
     # 采集找店详情页
     def rent_in_detail_page_parse(self, response):
         if 'sorry' in response._url:
             yield scrapy.Request(response.request._url, callback=self.rent_in_detail_page_parse)
-        try:
+        elif response.status == 404:
+            return
+        elif response.status == 200 or 301:
             doc = PyQuery(response.body)
             citycode = doc('.fc-city').text()
             create_time = doc('.f10.pr-5').text()
@@ -203,5 +207,3 @@ class GanJiSpider(scrapy.Spider):
 
             self.log('获取详情页： {url}'.format(url=url))
             yield item
-        except:
-            yield scrapy.Request(response.request._url, callback=self.rent_in_detail_page_parse)

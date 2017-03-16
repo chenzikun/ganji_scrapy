@@ -45,7 +45,7 @@ class Main(object):
     def crawl(self):
         self.crawl_num += 1
         print('#' * 60)
-        print(format('  第{}次进行主爬虫程序: {}  '.format(self.crawl_num, self.date_time())), '#^60')
+        print(format('  第{}次进行主爬虫程序: {}  '.format(self.crawl_num, self.date_time()), '#^60s'))
         print('#' * 60)
         process.crawl(GanJiSpider)
         process.start()
@@ -54,9 +54,9 @@ class Main(object):
 if __name__ == '__main__':
     main = Main()
     sched = BlockingScheduler()
-    sched.add_job(main.refresh_ip_pond, 'interval', minutes=20)
-    sched.add_job(main.test_ip_pond, 'interval', minutes=5)
-    sched.add_job(main.crawl, 'interval', minutes=30)
+    sched.add_job(main.refresh_ip_pond, 'interval', minutes=60)
+    sched.add_job(main.test_ip_pond, 'interval', minutes=20)
+    sched.add_job(main.crawl, 'interval', minutes=10)
     try:
         print('开始计划任务')
         sched.start()
@@ -68,5 +68,9 @@ if __name__ == '__main__':
 @register
 def _at_exit():
     print('#' * 60)
-    print(format('    爬虫结束：{}    '.format(main.date_time()), '^60'))
+    print(format('    爬虫结束：{}    '.format(main.date_time()), '#^60s'))
     print('#' * 60)
+
+# if __name__ == '__main__':
+#     main = Main()
+#     main.crawl()

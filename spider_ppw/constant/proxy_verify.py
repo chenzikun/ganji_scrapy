@@ -17,9 +17,8 @@ class VerifyProxy(object):
 
     def very_proxy(self, ip, port):
         # print(ip, port)
-        proxies = {"http": "http://{}:{}".format(ip, port)}
-        # proxies = {"http": "http://{}:{}".format(ip, port),
-        #            "https": "https://{}:{}".format(ip, port)}
+        proxies = {"http": "http://{}:{}".format(ip, port),
+                   "https": "https://{}:{}".format(ip, port)}
         try:
             r = requests.get('https://www.baidu.com/', proxies=proxies, timeout=30, verify=False)
             if r.status_code == 200:

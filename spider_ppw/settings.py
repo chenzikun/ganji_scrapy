@@ -28,7 +28,7 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 1
+DOWNLOAD_DELAY = 0.2
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
@@ -110,11 +110,18 @@ DUPEFILTER_CLASS = 'scrapy_redis.dupefilter.RFPDupeFilter'
 REDIS_URL = 'redis://127.0.0.1:6379'
 
 # mysql配置
-MYSQL_CONFIG = {'host': '192.168.1.253',
+# MYSQL_CONFIG = {'host': '192.168.1.253',
+#                 'port': 20002,
+#                 'user': 'chenzikun',
+#                 'password': 'ppwchenzikun',
+#                 'db': 'xw',
+#                 'charset': 'utf8mb4'
+#                 }
+
+MYSQL_CONFIG = {'host': '192.168.1.158',
                 'port': 20002,
-                'user': 'chenzikun',
-                'password': 'ppwchenzikun',
+                'user': 'root',
+                'password': 'xwroot*555',
                 'db': 'xw',
                 'charset': 'utf8mb4'
                 }
-

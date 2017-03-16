@@ -44,6 +44,7 @@ class CustomRedisPipeline(RedisPipeline):
     num = 0
 
     def process_item(self, item, spider):
+        print(format('    {}    '.format(self.num), '!^30s'))
         self.distribute_item(item, spider)
         return deferToThread(self._process_item, item, spider)
 
@@ -100,15 +101,15 @@ class CustomRedisPipeline(RedisPipeline):
         return item
 
     def handle_transfer_item(self, item, spider):
-        print('#' * 5, '[转店]', item['citycode'], item['create_time'])
+        print('#' * 5, '[转店]', item['citycode'], item['create_time'], item['url'])
         return item
 
     def handle_rent_out_item(self, item, spider):
-        print('*' * 5, '[出租]', item['citycode'], item['create_time'])
+        print('*' * 5, '[出租]', item['citycode'], item['create_time'], item['url'])
         return item
 
     def handle_rent_in_item(self, item, spider):
-        print('@' * 5, '[找店]', item['citycode'], item['create_time'])
+        print('@' * 5, '[找店]', item['citycode'], item['create_time'], item['url'])
         return item
 
     def date_time(self):
@@ -118,6 +119,8 @@ class CustomRedisPipeline(RedisPipeline):
         if ':' in time_str:
             year = datetime.now().year
             day, hour = time_str.split(' ')
+            if day > datetime.now().strftime('%m-%d'):
+                year = year - 1
             day = str(year) + '-' + day
         else:
             day = time_str
