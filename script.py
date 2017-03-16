@@ -54,9 +54,9 @@ class Main(object):
 if __name__ == '__main__':
     main = Main()
     sched = BlockingScheduler()
-    sched.add_job(main.refresh_ip_pond, 'interval', minutes=60)
-    sched.add_job(main.test_ip_pond, 'interval', minutes=20)
-    sched.add_job(main.crawl, 'interval', minutes=10)
+    sched.add_job(main.refresh_ip_pond, trigger='cron', minute="*/60", hour="7-23", day="0-6")
+    sched.add_job(main.test_ip_pond, trigger='cron', minute="*/20", hour="7-23", day="0-6")
+    sched.add_job(main.crawl, trigger='cron', minute="*/10", hour="7-23", day="0-6")
     try:
         print('开始计划任务')
         sched.start()
