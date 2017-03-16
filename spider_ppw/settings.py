@@ -46,7 +46,7 @@ COOKIES_ENABLED = False
 #}
 
 # Enable or disable spider middlewares
-# See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.htmlØ
+# See ht,tp://scrapy.readthedocs.org/en/latest/topics/spider-middleware.htmlØ
 # SPIDER_MIDDLEWARES = {
 #    'spider_ppw.middlewares.CustomUserAgentMiddleware': 400,
 # }
