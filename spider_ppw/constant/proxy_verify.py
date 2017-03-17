@@ -22,10 +22,10 @@ class VerifyProxy(object):
         try:
             r = requests.get('https://www.baidu.com/', proxies=proxies, timeout=30, verify=False)
             if r.status_code == 200:
+                print('#ip {}:{} 通过测试'.format(ip, port))
                 self.ip_pond.append((ip, port))
         except Exception as e:
-            print('(ip {}:{} 未通过测试'.format(ip, port))
-            print(e)
+            print('#ip {}:{}'.format(ip, port),e)
 
     def main(self):
         process_list = [Process(target=self.very_proxy, args=(self.ip_pond[index]))

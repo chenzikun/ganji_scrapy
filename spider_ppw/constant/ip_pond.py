@@ -15,7 +15,7 @@ class GetFreeProxy(object):
 
     # 快代理
     def free_proxy_first_source(self):
-        urls = ['http://www.kuaidaili.com/free/inha/{index}/'.format(index=i) for i in range(1, 2)]
+        urls = ['http://www.kuaidaili.com/free/inha/{index}/'.format(index=i) for i in range(1, 3)]
         for url in urls:
             dom=self.util.get_dom(url)
             ips = dom('')
@@ -23,12 +23,13 @@ class GetFreeProxy(object):
 
     # 抓取代理66 http://www.66ip.cn/
     def free_proxy_second_source(self):
-        url = "http://m.66ip.cn/mo.php?sxb=&tqsl=1&port=&export=&ktip=&sxa=&submit=%CC%E1++%C8%A1&textarea="
-        dom = self.util.get_dom(url)
-        ips=dom('body').text().split(' ')
-        for item in ips:
-            ip, port = item.split(':')
-            self.ip_pond.append((ip, port))
+        url = "http://m.66ip.cn/mo.php?sxb=&tqsl={}&port=&export=&ktip=&sxa=&submit=%CC%E1++%C8%A1&textarea="
+        for index in range(1,50):
+            dom = self.util.get_dom(url.format(str(index)))
+            ips=dom('body').text().split(' ')
+            for item in ips:
+                ip, port = item.split(':')
+                self.ip_pond.append((ip, port))
 
     # 有代理
     def free_proxy_third_source(self):
@@ -45,7 +46,7 @@ class GetFreeProxy(object):
     def free_proxy_fourth_source(self):
         url = "http://www.xicidaili.com/"
         dom = self.util.get_dom(url)
-        ip_list = list(dom('#ip_list')('tbody')('tr').items())[2:15]
+        ip_list = list(dom('#ip_list')('tbody')('tr').items())[2:20]
         for item in ip_list:
             ip = list(item('th').items)[1]
             port = list(item('th').items)[2]
