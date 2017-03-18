@@ -28,22 +28,24 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 0.2
+DOWNLOAD_DELAY = 1
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-COOKIES_ENABLED = False
+COOKIES_ENABLED = True
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
-#DEFAULT_REQUEST_HEADERS = {
-#   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-#   'Accept-Language': 'en',
-#}
+# DEFAULT_REQUEST_HEADERS = {
+#     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+#     'Accept-Language': 'zh-CN,zh;q=0.8,en;q=0.6',
+#     'refer': 'http://www.ganji.com/index.htm',
+#     'Connection': 'keep-alive'
+# }
 
 # Enable or disable spider middlewares
 # See ht,tp://scrapy.readthedocs.org/en/latest/topics/spider-middleware.htmlØ
@@ -55,8 +57,10 @@ COOKIES_ENABLED = False
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
    'spider_ppw.middlewares.CustomUserAgentMiddleware': 401,
-   # 'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': 750,
-   'spider_ppw.middlewares.CustomHttpProxyMiddleware': 751,
+   # 'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': 110,
+   # 'spider_ppw.middlewares.CustomHttpProxyMiddleware': 100,
+   # 'scrapy.contrib.downloadermiddleware.retry.RetryMiddleware': 600,
+   # 'spider_ppw.middlewares.CustomCookieMiddleware': 700,
 }
 
 # Enable or disable extensions
@@ -94,6 +98,11 @@ ITEM_PIPELINES = {
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
+# 是否retry
+# RETRY_ENABLED = True
+# 重新请求间隔
+# RETRY_TIMES = 2
+
 # log相关
 # LOG_ENABLED默认为True
 # LOG_ENABLED = False
@@ -106,8 +115,16 @@ SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 # 确保所有的爬虫通过Redis去重
 DUPEFILTER_CLASS = 'scrapy_redis.dupefilter.RFPDupeFilter'
 # slave的ip为master的ip地址，主机需要关闭redis的保护模式
-#REDIS_URL = 'redis://192.168.0.61:6379'
 REDIS_URL = 'redis://127.0.0.1:6379'
+
+MYSQL_CONFIG = {'host': '192.168.1.158',
+                'port': 20002,
+                'user': 'root',
+                'password': 'xwroot*555',
+                'db': 'xw',
+                'charset': 'utf8mb4'
+                }
+
 
 # mysql配置
 # MYSQL_CONFIG = {'host': '192.168.1.253',
@@ -117,11 +134,3 @@ REDIS_URL = 'redis://127.0.0.1:6379'
 #                 'db': 'xw',
 #                 'charset': 'utf8mb4'
 #                 }
-
-MYSQL_CONFIG = {'host': '192.168.1.158',
-                'port': 20002,
-                'user': 'root',
-                'password': 'xwroot*555',
-                'db': 'xw',
-                'charset': 'utf8mb4'
-                }

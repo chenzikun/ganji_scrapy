@@ -1,36 +1,58 @@
-from .db import RedisDatabase
-import requests
+from time import sleep
 from multiprocessing import Process
 
+import requests
 
-class VerifyProxy(object):
+from .db import RedisDatabase
+from .utils import Singleton
+
+
+class VerifyProxy(metaclass=Singleton):
 
     def __init__(self):
         self.redis_db = RedisDatabase()
 
-        self.ip_pond = self.redis_db.ip_pond()
+        self.collect_ips = []
 
-        print('筛选前ip池个数： {}'.format(len(self.redis_db.ip_pond())))
-        self.main()
-        print('筛选后ip池个数： {}'.format(len(self.ip_pond)))
-        self.redis_db.refresh_ip_pond(self.ip_pond)
+    def ip_nums(self):
+        num = len(self.redis_db.ip_pond())
+        return num
 
+    # process.join方法实现同样的作用，用于监听processes是否全部结束
+    # def is_processed_finished(self, pros):
+    #     try:
+    #         if not any(map(lambda p: p.is_alive(), pros)):
+    #             self.redis_db.refresh_ip_pond(self.redis_db.ip_pond)
+    #             print('筛选后ip池个数： {}'.format(self.ip_nums()))
+    #         else:
+    #             print('ip池等待更新...')
+    #             sleep(1)
+    #             self.is_processed_finished(pros)
+    #     except Exception as e:
+    #         print(e)
+
+    # 验证ip是否有效
     def very_proxy(self, ip, port):
-        # print(ip, port)
         proxies = {"http": "http://{}:{}".format(ip, port),
                    "https": "https://{}:{}".format(ip, port)}
         try:
-            r = requests.get('https://www.baidu.com/', proxies=proxies, timeout=30, verify=False)
+            r = requests.get('https://www.baidu.com/', proxies=proxies, timeout=10, verify=False)
             if r.status_code == 200:
-                print('#ip {}:{} 通过测试'.format(ip, port))
-                self.ip_pond.append((ip, port))
-        except Exception as e:
-            print('#ip {}:{}'.format(ip, port),e)
+                self.collect_ips.append((ip, port))
+        except Exception:
+            pass
 
     def main(self):
-        process_list = [Process(target=self.very_proxy, args=(self.ip_pond[index]))
-                        for index in range(len(self.ip_pond))]
+        ip_pond = self.redis_db.ip_pond()
+
+        process_list = [Process(target=self.very_proxy, args=(ip_pond.pop()))
+                        for index in range(self.ip_nums())]
         for p in process_list:
             p.start()
         for p in process_list:
             p.join()
+
+        self.redis_db.refresh_ip_pond(self.collect_ips)
+        self.collect_ips = []
+
+

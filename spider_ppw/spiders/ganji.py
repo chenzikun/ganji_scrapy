@@ -6,6 +6,7 @@ from pyquery import PyQuery
 
 from ..items import SpiderPpwItemTransfer, SpiderPpwItemRentOut, SpiderPpwItemRentIn
 from ..constant.db import MysqlDatabase
+from ..constant.utils import Util
 
 
 class GanJiSpider(scrapy.Spider):
@@ -24,16 +25,14 @@ class GanJiSpider(scrapy.Spider):
 
     domain_str = 'http://{}.ganji.com'
 
-    start_urls = ['http://www.ganji.com/index.htm']
+    # start_urls = ['http://www.ganji.com/index.htm']
+    start_urls = db.collect_start_urls
 
     urls = set()
 
-    # 建立subdomain --> code，采取城市列表时添加数据
-    sub_domain_to_city_code_map = {}
-
     # 采集列表页准备
-    def parse(self, response):
-        if 'sorry' in response._url:
+    def parse_(self, response):
+        if 'sorry' or 'confirm' in response._url:
             yield scrapy.Request(response.request._url, callback=self.parse)
         elif response.status == 200 or 301:
             doc = PyQuery(response.body)
@@ -43,7 +42,7 @@ class GanJiSpider(scrapy.Spider):
                 city_code = self.db.city_map.get(city)
                 if city_code:
                     sub_domain = link.split('//')[1].split('.')[0]
-                    self.sub_domain_to_city_code_map[sub_domain] = city_code
+                    self.db.sub_domain_to_city_code_map[sub_domain] = city_code
                     url_transfer = 'http://{}.ganji.com/fang6/a1c1/'.format(sub_domain)
                     url_rent_out = 'http://{}.ganji.com/fang6/a1c2/'.format(sub_domain)
                     url_rent_in = 'http://{}.ganji.com/fang6/a1s2/'.format(sub_domain)
@@ -55,12 +54,16 @@ class GanJiSpider(scrapy.Spider):
         else:
             yield scrapy.Request(response.request._url, callback=self.parse)
 
+    def list_page_parse(self):
+        pass
+
     # 采集列表页
-    def list_page_parse(self, response):
+    def parse(self, response):
+        # 采集列表页
         sub_domain = response.request._url.split('.')[0].strip('http://')
-        city_code = self.sub_domain_to_city_code_map.get(sub_domain)
-        if 'sorry' in response._url:
-            yield scrapy.Request(response.request._url, callback=self.list_page_parse)
+        city_code = self.db.sub_domain_to_city_code_map.get(sub_domain)
+        if 'sorry' or 'confirm' in response._url:
+            yield scrapy.Request(response.request._url, callback=self.parse)
         elif response.status == 404:
             return
         elif response.status == 200 or 301:
@@ -73,11 +76,13 @@ class GanJiSpider(scrapy.Spider):
                     if li('span').text() <= '2':
                         target_url = self.domain_str.format(sub_domain) + list_url
                         self.urls.add(target_url)
-                        yield scrapy.Request(target_url, callback=self.list_page_parse)
+                        yield scrapy.Request(target_url, callback=self.parse)
 
             # 详情页
             for dl in doc('.listBox.list-img-style1')('dl').items():
-                detail_url = self.domain_str.format(sub_domain) + dl('a').attr('href')
+                detail_url =  dl('a').attr('href')
+                if 'http' not in detail_url:
+                    detail_url = self.domain_str.format(sub_domain) + detail_url
                 city_urls_set = self.db.url_map.get(city_code, set())
                 if detail_url not in city_urls_set:
                     if '/a1c1/' in response.request._url:
@@ -89,7 +94,7 @@ class GanJiSpider(scrapy.Spider):
 
     # 采集转店详情页
     def transfer_detail_page_parse(self, response):
-        if 'sorry' in response._url:
+        if 'sorry' or 'confirm' in response._url:
             yield scrapy.Request(response.request._url, callback=self.transfer_detail_page_parse)
         elif response.status == 404:
             return

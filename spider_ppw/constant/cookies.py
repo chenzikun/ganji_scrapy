@@ -1,25 +1,20 @@
 import requests
-import json
-import redis
 import logging
-# from ..settings import REDIS_URL
 
 logger = logging.getLogger(__name__)
 
-# rdb = redis.Redis.from_url(REDIS_URL, db=2, decode_responses=True)
-
-login_url = ''
+login_url = 'https://passport.ganji.com/login.php?next=/'
 
 # 获取cookies
-def get_cookie(account, password):
+def get_cookie():
     req = requests.Session()
     payload = {
-        'log': account,
-        'pwd': password,
-        'remember_me': 'forever',
-        'wp-submit': '登录',
+        'login_username': '15151829176',
+        'login_password': 'czk19911001',
+        'setcookie': 'checked',
+        'chk-vm': '登录赶集',
     }
     response = req.post(login_url, data=payload)
     cookies = response.cookies.get_dict()
-    logger.warning('获取Cookie成功！(账号为：{})'.format(account))
-    return json.dump(cookies)
+
+    return cookies
