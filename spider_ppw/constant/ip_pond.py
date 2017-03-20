@@ -13,7 +13,6 @@ class GetFreeProxy(object):
 
         self.ip_pond = []
 
-
     # 快代理
     def free_proxy_first_source(self):
         pass

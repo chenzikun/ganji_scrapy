@@ -34,18 +34,18 @@ DOWNLOAD_DELAY = 1
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-COOKIES_ENABLED = True
+# COOKIES_ENABLED = True
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
-# DEFAULT_REQUEST_HEADERS = {
-#     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-#     'Accept-Language': 'zh-CN,zh;q=0.8,en;q=0.6',
-#     'refer': 'http://www.ganji.com/index.htm',
-#     'Connection': 'keep-alive'
-# }
+DEFAULT_REQUEST_HEADERS = {
+    'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1)AppleWebKit/537.36 ("
+                             "KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36",
+    'refer': 'http://www.ganji.com/index.htm',
+    # 'Connection': 'keep-alive',
+}
 
 # Enable or disable spider middlewares
 # See ht,tp://scrapy.readthedocs.org/en/latest/topics/spider-middleware.htmlØ
@@ -57,8 +57,8 @@ COOKIES_ENABLED = True
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
    'spider_ppw.middlewares.CustomUserAgentMiddleware': 401,
-   # 'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': 110,
-   # 'spider_ppw.middlewares.CustomHttpProxyMiddleware': 100,
+   'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': 110,
+   'spider_ppw.middlewares.CustomHttpProxyMiddleware': 100,
    # 'scrapy.contrib.downloadermiddleware.retry.RetryMiddleware': 600,
    # 'spider_ppw.middlewares.CustomCookieMiddleware': 700,
 }
@@ -100,14 +100,14 @@ ITEM_PIPELINES = {
 
 # 是否retry
 # RETRY_ENABLED = True
-# 重新请求间隔
+# 重新请求次数
 # RETRY_TIMES = 2
 
 # log相关
 # LOG_ENABLED默认为True
 # LOG_ENABLED = False
 # log_level， CRITICAL、 ERROR、WARNING、INFO、DEBUG
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'ERROR'
 
 # redis
 # 启用Redis调度存储请求队列
@@ -125,12 +125,3 @@ MYSQL_CONFIG = {'host': '192.168.1.158',
                 'charset': 'utf8mb4'
                 }
 
-
-# mysql配置
-# MYSQL_CONFIG = {'host': '192.168.1.253',
-#                 'port': 20002,
-#                 'user': 'chenzikun',
-#                 'password': 'ppwchenzikun',
-#                 'db': 'xw',
-#                 'charset': 'utf8mb4'
-#                 }

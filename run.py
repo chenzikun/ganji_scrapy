@@ -29,7 +29,6 @@ class Main(object):
         self.process = CrawlerProcess(settings)
         self.process.crawl(GanJiSpider)
 
-
     @staticmethod
     def print_(text):
         print('#' * 150)
@@ -60,8 +59,8 @@ class Main(object):
 if __name__ == '__main__':
     main = Main()
     sched = BlockingScheduler()
-    sched.add_job(main.refresh_ip_pond, trigger='cron', minute="*/60", hour="7-23", day="*")
-    sched.add_job(main.test_ip_pond, trigger='cron', minute="*/20", hour="7-23", day="*")
+    # sched.add_job(main.refresh_ip_pond, trigger='cron', minute="*/60", hour="7-23", day="*")
+    # sched.add_job(main.test_ip_pond, trigger='cron', minute="*/20", hour="7-23", day="*")
     sched.add_job(main.crawl, trigger='cron', minute="*/10", hour="7-23", day="*")
     try:
         main.print_('开始计划任务: {}'.format(main.date_time()))

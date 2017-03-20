@@ -82,15 +82,15 @@ class CustomHttpProxyMiddleware(object):
     redis_db = RedisDatabase()
 
     def process_request(self, request, spider):
-        # Set the location of the proxy
-        if self.redis_db.ip_pond():
-            ip, port = random.choice(list(self.redis_db.ip_pond()))
-            print('代理：',ip, port)
-            request.meta['proxy'] = 'http://' + str(ip) + ':' + str(port)
-            encode_user_pass = base64.b64encode(''.encode()).decode()
-            request.headers['Proxy-Authorization'] = 'Basic ' + encode_user_pass
-        else:
-            pass
+        request.meta['proxy'] = 'http://211.149.221.42:16816'
+        proxy_user_pass = 'chen_zikun:sja9s7z5'
+        encode_user_pass = base64.b64encode(proxy_user_pass.encode()).decode()
+        request.headers['Proxy-Authorization'] = 'Basic ' + encode_user_pass
+
+
+class CustomSpiderMiddleware():
+    # TODO:
+    pass
 
 
 class CustomRetryMiddleware(RetryMiddleware):
@@ -98,10 +98,6 @@ class CustomRetryMiddleware(RetryMiddleware):
     def process_response(self, request, response, spider):
         return response
 
-
-class CustomSpiderMiddleware():
-    # TODO:
-    pass
 
 class CustomCookieMiddleware(RetryMiddleware):
 

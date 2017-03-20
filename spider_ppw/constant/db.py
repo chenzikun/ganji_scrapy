@@ -14,6 +14,12 @@ class MysqlDatabase(metaclass=Singleton):
 
     def __init__(self):
 
+        # 建立subdomain --> code，采取城市列表时添加数据
+        # 抓取入口页时跟新数据
+        self.sub_domain_to_city_code_map = {}
+
+        self.util = Util()
+
         # 装载城市字典
         self.city_map = {}
         sql = """SELECT code, name FROM district where status=2"""
@@ -48,14 +54,6 @@ class MysqlDatabase(metaclass=Singleton):
 
         self.num = 0
 
-        # 建立subdomain --> code，采取城市列表时添加数据
-        # 抓取入口页时跟新数据
-        self.sub_domain_to_city_code_map = {}
-
-        self.util = Util()
-        self.collect_start_urls = []
-        self.get_city_list()
-
     @staticmethod
     def mysql_conn():
         return pymysql.connect(**settings.get('MYSQL_CONFIG'))
@@ -79,22 +77,6 @@ class MysqlDatabase(metaclass=Singleton):
     @staticmethod
     def date_time():
         return datetime.now().strftime('%H:%M:%S')
-
-    def get_city_list(self):
-        doc = self.util.get_dom('http://www.ganji.com/index.htm')
-        for a in doc('.all-city')('a').items():
-            link = a.attr('href')
-            city = str(a.text())
-            city_code = self.city_map.get(city)
-            if city_code:
-                sub_domain = link.split('//')[1].split('.')[0]
-                self.sub_domain_to_city_code_map[sub_domain] = city_code
-                url_transfer = 'http://{}.ganji.com/fang6/a1c1/'.format(sub_domain)
-                url_rent_out = 'http://{}.ganji.com/fang6/a1c2/'.format(sub_domain)
-                url_rent_in = 'http://{}.ganji.com/fang6/a1s2/'.format(sub_domain)
-                url_division = [url_transfer, url_rent_out, url_rent_in]
-                for url in url_division:
-                    self.collect_start_urls.append(url)
 
 
 class RedisDatabase(metaclass=Singleton):

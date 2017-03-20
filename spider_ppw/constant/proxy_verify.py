@@ -18,19 +18,6 @@ class VerifyProxy(metaclass=Singleton):
         num = len(self.redis_db.ip_pond())
         return num
 
-    # process.join方法实现同样的作用，用于监听processes是否全部结束
-    # def is_processed_finished(self, pros):
-    #     try:
-    #         if not any(map(lambda p: p.is_alive(), pros)):
-    #             self.redis_db.refresh_ip_pond(self.redis_db.ip_pond)
-    #             print('筛选后ip池个数： {}'.format(self.ip_nums()))
-    #         else:
-    #             print('ip池等待更新...')
-    #             sleep(1)
-    #             self.is_processed_finished(pros)
-    #     except Exception as e:
-    #         print(e)
-
     # 验证ip是否有效
     def very_proxy(self, ip, port):
         proxies = {"http": "http://{}:{}".format(ip, port),
