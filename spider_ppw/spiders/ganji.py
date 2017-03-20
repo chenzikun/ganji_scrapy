@@ -65,8 +65,8 @@ class GanJiSpider(scrapy.Spider):
             detail_url =  dl('a').attr('href')
             if 'http' not in detail_url:
                 detail_url = self.domain_str.format(sub_domain) + detail_url
-            if detail_url not in self.db.city_map[city_code]:
-                self.db.city_map[city_code].add(detail_url)
+            if detail_url not in self.db.url_map[city_code]:
+                self.db.url_map[city_code].add(detail_url)
                 if '/a1c1/' in response.request._url:
                     yield scrapy.Request(detail_url, callback=self.transfer_detail_page_parse)
                 if '/a1c2/' in response.request._url:

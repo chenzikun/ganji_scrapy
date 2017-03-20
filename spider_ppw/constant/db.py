@@ -14,12 +14,6 @@ class MysqlDatabase(metaclass=Singleton):
 
     def __init__(self):
 
-        # 建立subdomain --> code，采取城市列表时添加数据
-        # 抓取入口页时跟新数据
-        self.sub_domain_to_city_code_map = {}
-
-        self.util = Util()
-
         # 装载城市字典
         self.city_map = {}
         sql = """SELECT code, name FROM district where status=2"""
@@ -53,6 +47,12 @@ class MysqlDatabase(metaclass=Singleton):
         self.title_filter = ('Q', 'PW', 'LY', 'YP')
 
         self.num = 0
+
+        # 建立subdomain --> code，采取城市列表时添加数据
+        # 抓取入口页时跟新数据
+        self.sub_domain_to_city_code_map = {}
+
+        self.util = Util()
 
     @staticmethod
     def mysql_conn():
