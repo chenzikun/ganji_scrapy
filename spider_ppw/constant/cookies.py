@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 
 login_url = 'https://passport.ganji.com/login.php?next=/'
 
+
 # 获取cookies
 def get_cookie():
     req = requests.Session()

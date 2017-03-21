@@ -1,12 +1,11 @@
-
 from multiprocessing import Process
 
 from .utils import Util
 from .proxy_verify import VerifyProxy
 from .db import RedisDatabase
 
-class GetFreeProxy(object):
 
+class GetFreeProxy(object):
     def __init__(self):
 
         self.util = Util()
@@ -72,7 +71,6 @@ class GetFreeProxy(object):
 
 
 class IpPondManager(object):
-
     def __init__(self):
         self.redis_db = RedisDatabase()
 

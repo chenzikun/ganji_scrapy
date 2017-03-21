@@ -8,7 +8,6 @@ from .utils import Singleton
 
 
 class VerifyProxy(metaclass=Singleton):
-
     def __init__(self):
         self.redis_db = RedisDatabase()
 
@@ -26,8 +25,8 @@ class VerifyProxy(metaclass=Singleton):
             r = requests.get('https://www.baidu.com/', proxies=proxies, timeout=10, verify=False)
             if r.status_code == 200:
                 self.collect_ips.append((ip, port))
-        except Exception:
-            pass
+        except Exception as e:
+            print(e)
 
     def main(self):
         ip_pond = self.redis_db.ip_pond()
@@ -41,5 +40,3 @@ class VerifyProxy(metaclass=Singleton):
 
         self.redis_db.refresh_ip_pond(self.collect_ips)
         self.collect_ips = []
-
-

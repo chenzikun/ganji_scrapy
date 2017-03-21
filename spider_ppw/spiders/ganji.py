@@ -1,11 +1,10 @@
-
 import scrapy
 import re
 from pyquery import PyQuery
 
-
 from ..items import SpiderPpwItemTransfer, SpiderPpwItemRentOut, SpiderPpwItemRentIn
 from ..constant.db import MysqlDatabase
+from ..constant.db import RedisDatabase
 
 
 class GanJiSpider(scrapy.Spider):
@@ -18,8 +17,7 @@ class GanJiSpider(scrapy.Spider):
     name = 'ganji'
 
     db = MysqlDatabase()
-
-    domain = "http://ganji.com"
+    re_db = RedisDatabase()
 
     domain_str = 'http://{}.ganji.com'
 
@@ -62,17 +60,22 @@ class GanJiSpider(scrapy.Spider):
 
         # 详情页
         for dl in doc('.listBox.list-img-style1')('dl').items():
-            detail_url =  dl('a').attr('href')
+            detail_url = dl('a').attr('href')
             if 'http' not in detail_url:
                 detail_url = self.domain_str.format(sub_domain) + detail_url
-            if detail_url not in self.db.url_map[city_code]:
+            if self.db.url_map.get(city_code):
+                if detail_url not in self.db.url_map[city_code]:
+                    self.db.url_map[city_code].add(detail_url)
+                    if detail_url not in self.re_db.load('404'):
+                        if '/a1c1/' in response.request._url:
+                            yield scrapy.Request(detail_url, callback=self.transfer_detail_page_parse)
+                        if '/a1c2/' in response.request._url:
+                            yield scrapy.Request(detail_url, callback=self.rent_out_detail_page_parse)
+                        if '/a1s2/' in response.request._url:
+                            yield scrapy.Request(detail_url, callback=self.rent_in_detail_page_parse)
+            else:
+                self.db.url_map[city_code] = set()
                 self.db.url_map[city_code].add(detail_url)
-                if '/a1c1/' in response.request._url:
-                    yield scrapy.Request(detail_url, callback=self.transfer_detail_page_parse)
-                if '/a1c2/' in response.request._url:
-                    yield scrapy.Request(detail_url, callback=self.rent_out_detail_page_parse)
-                if '/a1s2/' in response.request._url:
-                    yield scrapy.Request(detail_url, callback=self.rent_in_detail_page_parse)
 
     # 采集转店详情页
     def transfer_detail_page_parse(self, response):
@@ -82,7 +85,7 @@ class GanJiSpider(scrapy.Spider):
         title = doc('.title-name').text()
         contact = doc('.fc-4b').text()
         tel = doc('.contact-mobile').text()
-        url = response._url
+        url = response.request._url
         rent = doc('.basic-info-price').text()
 
         sub_doc = list(doc('.basic-info-ul')('li').items())
@@ -105,8 +108,7 @@ class GanJiSpider(scrapy.Spider):
                                      tel=tel, url=url, rent=rent, rent_unit=rent_unit, area=area,
                                      shop_state=shop_state, industry_type=industry_type, shop_name=shop_name,
                                      address=address, suit=suit, detail=detail, img=img, type=1,
-                                     business_center=business_center)
-
+                                     business_center=business_center, district=district)
         self.log('获取详情页： {url}'.format(url=url))
         yield item
 
@@ -118,7 +120,7 @@ class GanJiSpider(scrapy.Spider):
         title = doc('.title-name').text()
         contact = doc('.fc-4b').text()
         tel = doc('.contact-mobile').text()
-        url = response._url
+        url = response.request._url
         rent = doc('.basic-info-price').text()
 
         sub_doc = list(doc('.basic-info-ul')('li').items())
@@ -140,7 +142,7 @@ class GanJiSpider(scrapy.Spider):
                                     tel=tel, url=url, rent=rent, rent_unit=rent_unit, area=area,
                                     shop_state=shop_state, industry_type=industry_type, shop_name=shop_name,
                                     address=address, suit=suit, detail=detail, img=img, type=2,
-                                    business_center=business_center)
+                                    business_center=business_center, district=district)
 
         self.log('获取详情页： {url}'.format(url=url))
         yield item
@@ -153,7 +155,7 @@ class GanJiSpider(scrapy.Spider):
         title = doc('.title-name').text()
         contact = doc('.fc-4b').text()
         tel = doc('.contact-mobile').text()
-        url = response._url
+        url = response.request._url
         rent = doc('.basic-info-price').text()
 
         sub_doc = list(doc('.basic-info-ul')('li').items())
@@ -162,20 +164,16 @@ class GanJiSpider(scrapy.Spider):
             self.db.rent_unit_map.get(re_compile.findall(sub_doc[0].text())[0].strip('（').strip(' '))
         area = sub_doc[1].text().split(' ')[1]
         try:
-            try:
-                district, _, business_center = doc('.with-area.clearfix').text().split(' ')[3:6]
-            except:
-                district = doc('.with-area.clearfix').text().split(' ')[1]
-                business_center = ' '
-        except:
-            district, business_center = ' ', ' '
+            district = doc('.with-area.clearfix').text().split(' ')[3]
+        except Exception:
+            district = doc('.with-area.clearfix').text().split(' ')[1]
 
         address = sub_doc[4].text().split(' ')[1]
         detail = doc('.summary-cont').text()
 
         item = SpiderPpwItemRentIn(citycode=citycode, create_time=create_time, title=title, contact=contact,
                                    tel=tel, url=url, rent=rent, rent_unit=rent_unit, area=area,
-                                   address=address, detail=detail, type=3)
+                                   address=address, detail=detail, type=3, district=district)
 
         self.log('获取详情页： {url}'.format(url=url))
         yield item

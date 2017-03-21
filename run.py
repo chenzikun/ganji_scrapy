@@ -1,4 +1,5 @@
 import os
+
 os.environ.setdefault('SCRAPY_SETTINGS_MODULE', 'spider_ppw.settings')
 from datetime import datetime
 from atexit import register
@@ -14,7 +15,6 @@ from spider_ppw.constant import ip_pond
 
 
 class Main(object):
-
     def __init__(self):
         # ip池爬取次数计数
         self.ip_pond_num = 0

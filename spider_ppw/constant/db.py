@@ -48,6 +48,8 @@ class MysqlDatabase(metaclass=Singleton):
 
         self.num = 0
 
+        self.redirect_urls = set()
+
         # 建立subdomain --> code，采取城市列表时添加数据
         # 抓取入口页时跟新数据
         self.sub_domain_to_city_code_map = {}
@@ -82,7 +84,8 @@ class MysqlDatabase(metaclass=Singleton):
 class RedisDatabase(metaclass=Singleton):
 
     def __init__(self):
-        self.refresh_cookie()
+        # self.refresh_cookie()
+        self.dump('404', [])
 
     @staticmethod
     def redis_conn():
@@ -90,11 +93,11 @@ class RedisDatabase(metaclass=Singleton):
         return redis_conn_
 
     def ip_pond(self):
-        result = json.loads(self.redis_conn().get('ip_pond').decode()) if self.redis_conn().get('ip_pond') else []
+        result = self.load('ip_pond') if self.load('ip_pond') else []
         return result
 
     def get_cookie(self):
-        result = json.loads(self.redis_conn().get('cookie').decode()) if self.redis_conn().get('cookie') else ''
+        result = self.load('cookie') if self.load('cookie') else ''
         return result
 
     def refresh_cookie(self):
@@ -109,3 +112,12 @@ class RedisDatabase(metaclass=Singleton):
     def dump(self, key, value):
         s = json.dumps(value)
         self.redis_conn().set(key, s)
+
+    def load(self, key):
+        result = self.redis_conn().get(key)
+        if result:
+            return json.loads(result.decode())
+
+    def refresh_404_urls(self, data):
+        self.redis_conn().delete('404')
+        self.dump('404', data)
