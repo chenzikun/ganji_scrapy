@@ -14,7 +14,6 @@ from scrapy_redis.pipelines import RedisPipeline
 from twisted.internet.threads import deferToThread
 from scrapy.exceptions import DropItem
 
-
 from .items import SpiderPpwItemTransfer, SpiderPpwItemRentOut, SpiderPpwItemRentIn
 from .constant.db import MysqlDatabase
 
@@ -85,8 +84,6 @@ class CustomRedisPipeline(RedisPipeline):
                 item['suit'] = self.format_str(item['suit'])
         if item['rent'] == '面议':
             item['rent'] = 0
-        # if item['rent_unit']:
-        #     item['rent_unit'] = self.format_str(item['rent_unit'])
         if item['shop_name']:
             item['shop_name'] = self.format_str(item['shop_name'])
         if item['address']:
@@ -156,5 +153,3 @@ class CustomRedisPipeline(RedisPipeline):
         values = ','.join(list(order.values()))
         sql = 'INSERT INTO spiderdb( ' + field + ') VALUES (' + values + ');'.replace('面议', 'NULL')
         return sql
-
-

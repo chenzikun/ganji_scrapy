@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-
-# Define here the models for your spider middleware
-#
-# See documentation in:
-# http://doc.scrapy.org/en/latest/topics/spider-middleware.html
-
 import random
 import base64
 import logging
@@ -14,14 +7,13 @@ from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
 from scrapy.downloadermiddlewares.retry import RetryMiddleware
 from scrapy.conf import settings
 from scrapy.exceptions import IgnoreRequest
-# agent和ip池
-from .constant.useragent import AGENTS
-from .constant.db import RedisDatabase
-from .constant.db import MysqlDatabase
 
+# agent和ip池
+from ..constant.useragent import AGENTS
+from ..constant.db import RedisDatabase
+from ..constant.db import MysqlDatabase
 
 logger = logging.getLogger(__name__)
-
 
 redis_db = RedisDatabase()
 db = MysqlDatabase()
@@ -30,13 +22,13 @@ db = MysqlDatabase()
 # download middleware
 class CustomUserAgentMiddleware(UserAgentMiddleware):
     """随机更改Usera"""
+
     def process_request(self, request, spider):
         agent = random.choice(AGENTS)
         request.headers.setdefault(b'User-Agent', agent)
 
 
 class CustomHttpProxyMiddleware(object):
-
     def process_request(self, request, spider):
         request.meta['proxy'] = settings.get('PROXY')
         proxy_user_pass = settings.get('PROXY_USER_PASSWORD')
@@ -45,7 +37,6 @@ class CustomHttpProxyMiddleware(object):
 
 
 class CustomUrlFilterMiddleware(object):
-
     def process_request(self, request, spider):
         url = request._url
         sub_domain = url.split('//')[1].split('.')[0]
@@ -59,7 +50,6 @@ class CustomUrlFilterMiddleware(object):
 
 
 class CustomCookieMiddleware(RetryMiddleware):
-
     def __init__(self, settings, crawler):
         RetryMiddleware.__init__(self, settings)
 
@@ -76,27 +66,3 @@ class CustomCookieMiddleware(RetryMiddleware):
     def process_response(self, request, response, spider):
         if response.status != 200 or 301:
             redis_db.refresh_cookie()
-
-
-# spider middleware
-
-class CustomUrlDropMiddleware(object):
-
-    # 排除掉域名为w的url
-    def process_spider_input(self, response, spider):
-        url = response._url
-        sub_domain = url.split('//')[1].split('.')[0]
-        if sub_domain == 'w':
-            raise Exception
-
-
-class CustomHttpErrorMiddleware(object):
-
-    def process_spider_input(self,response, spider):
-        if response.status == 404:
-            raise Exception
-
-    def process_spider_exception(self, response):
-        urls_404 = redis_db.load('404')
-        urls_404.append(response.request._url)
-        redis_db.refresh_404_urls(urls_404)

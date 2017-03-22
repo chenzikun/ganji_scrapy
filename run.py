@@ -41,19 +41,19 @@ class Main(object):
 
     def refresh_ip_pond(self):
         self.ip_pond_num += 1
-        self.print_('  第{}次更新ip_pond: {}  '.format(self.ip_pond_num, self.date_time()))
+        self.print_('第{}次更新ip_pond: {}'.format(self.ip_pond_num, self.date_time()))
         self.ip_pond.main()
 
     def test_ip_pond(self):
         self.verify_ip_pond_num += 1
-        self.print_('  第{}次更新ip_pond: {}  '.format(self.verify_ip_pond_num, self.date_time()))
+        self.print_('第{}次更新ip_pond: {}'.format(self.verify_ip_pond_num, self.date_time()))
         self.verify.main()
 
     def crawl(self):
         self.crawl_num += 1
-        self.process._stop_reactor()
+        self.process.stop()
         self.process.start()
-        self.print_('  第{}次进行主爬虫程序: {}  '.format(self.crawl_num, self.date_time()))
+        self.print_('第{}次进行主爬虫程序: {}'.format(self.crawl_num, self.date_time()))
 
 
 if __name__ == '__main__':
@@ -72,4 +72,4 @@ if __name__ == '__main__':
 
 @register
 def _at_exit():
-    main.print_('    爬虫结束：{}    '.format(main.date_time()))
+    main.print_('爬虫结束：{}'.format(main.date_time()))

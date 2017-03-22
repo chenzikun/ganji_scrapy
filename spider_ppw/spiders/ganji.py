@@ -45,7 +45,7 @@ class GanJiSpider(scrapy.Spider):
 
     # 采集列表页
     def list_page_parse(self, response):
-        sub_domain = response.request._url.split('.')[0].strip('http://')
+        sub_domain = response.request.url.split('.')[0].strip('http://')
         city_code = self.db.sub_domain_to_city_code_map.get(sub_domain)
         doc = PyQuery(response.body)
         # 翻页
@@ -67,11 +67,11 @@ class GanJiSpider(scrapy.Spider):
                 if detail_url not in self.db.url_map[city_code]:
                     self.db.url_map[city_code].add(detail_url)
                     if detail_url not in self.re_db.load('404'):
-                        if '/a1c1/' in response.request._url:
+                        if '/a1c1/' in response.request.url:
                             yield scrapy.Request(detail_url, callback=self.transfer_detail_page_parse)
-                        if '/a1c2/' in response.request._url:
+                        if '/a1c2/' in response.request.url:
                             yield scrapy.Request(detail_url, callback=self.rent_out_detail_page_parse)
-                        if '/a1s2/' in response.request._url:
+                        if '/a1s2/' in response.request.url:
                             yield scrapy.Request(detail_url, callback=self.rent_in_detail_page_parse)
             else:
                 self.db.url_map[city_code] = set()
@@ -85,7 +85,7 @@ class GanJiSpider(scrapy.Spider):
         title = doc('.title-name').text()
         contact = doc('.fc-4b').text()
         tel = doc('.contact-mobile').text()
-        url = response.request._url
+        url = response.url
         rent = doc('.basic-info-price').text()
 
         sub_doc = list(doc('.basic-info-ul')('li').items())
@@ -120,7 +120,7 @@ class GanJiSpider(scrapy.Spider):
         title = doc('.title-name').text()
         contact = doc('.fc-4b').text()
         tel = doc('.contact-mobile').text()
-        url = response.request._url
+        url = response.url
         rent = doc('.basic-info-price').text()
 
         sub_doc = list(doc('.basic-info-ul')('li').items())
@@ -155,7 +155,7 @@ class GanJiSpider(scrapy.Spider):
         title = doc('.title-name').text()
         contact = doc('.fc-4b').text()
         tel = doc('.contact-mobile').text()
-        url = response.request._url
+        url = response.url
         rent = doc('.basic-info-price').text()
 
         sub_doc = list(doc('.basic-info-ul')('li').items())

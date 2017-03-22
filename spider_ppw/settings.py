@@ -46,16 +46,16 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Enable or disable spider middlewares
 SPIDER_MIDDLEWARES = {
-    'spider_ppw.middlewares.CustomHttpErrorMiddleware': 101,
-    'spider_ppw.middlewares.CustomUrlDropMiddleware': 10,
+    'spider_ppw.middlewares.spider.CustomHttpErrorMiddleware': 101,
+    'spider_ppw.middlewares.spider.CustomUrlDropMiddleware': 10,
 }
 
 # Enable or disable downloader middlewares
 DOWNLOADER_MIDDLEWARES = {
-    'spider_ppw.middlewares.CustomUserAgentMiddleware': 401,
+    'spider_ppw.middlewares.downloader.CustomUserAgentMiddleware': 401,
     'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': 110,
-    'spider_ppw.middlewares.CustomHttpProxyMiddleware': 100,
-    'spider_ppw.middlewares.CustomUrlFilterMiddleware': 10,
+    'spider_ppw.middlewares.downloader.CustomHttpProxyMiddleware': 100,
+    'spider_ppw.middlewares.downloader.CustomUrlFilterMiddleware': 10,
 }
 
 # Enable or disable extensions
