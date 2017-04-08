@@ -33,7 +33,7 @@ class MysqlDatabase(metaclass=Singleton):
 
         # 装载已经存在的urls字典
         self.url_map = {}
-        sql = """select url, citycode from spiderdb where source=2"""
+        sql = """select url, citycode from spiderdb where source in (1, 2)"""
         urls = self.query(sql)
         for url, citycode in urls:
             if not self.url_map.get(citycode):
@@ -53,6 +53,7 @@ class MysqlDatabase(metaclass=Singleton):
         # 建立subdomain --> code，采取城市列表时添加数据
         # 抓取入口页时跟新数据
         self.sub_domain_to_city_code_map = {}
+        self.sub_domain_to_city_code_map_58 = {}
 
         self.util = Util()
 
@@ -60,21 +61,18 @@ class MysqlDatabase(metaclass=Singleton):
     def mysql_conn():
         return pymysql.connect(**settings.get('MYSQL_CONFIG'))
 
-    def insert_mysql(self, sql):
+    def insert(self, sql, value):
+        self.num += 1
+        print('成功写入第{}条记录：{}'.format(self.num, self.date_time()))
         conn = self.mysql_conn()
         with conn.cursor() as cursor:
-            cursor.execute(sql)
+            cursor.execute(sql, value)
         conn.commit()
 
     def query(self, sql):
         with self.mysql_conn().cursor() as cursor:
             cursor.execute(sql)
             return cursor.fetchall()
-
-    def insert(self, sql):
-        self.num += 1
-        print('成功写入第{}条记录：{}'.format(self.num, self.date_time()))
-        return self.insert_mysql(sql)
 
     @staticmethod
     def date_time():
@@ -85,7 +83,7 @@ class RedisDatabase(metaclass=Singleton):
 
     def __init__(self):
         # self.refresh_cookie()
-        self.dump('404', [])
+        pass
 
     @staticmethod
     def redis_conn():

@@ -1,11 +1,5 @@
-# -*- coding: utf-8 -*-
-
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
-
 from datetime import datetime
+from datetime import timedelta
 from collections import OrderedDict
 import logging
 
@@ -14,14 +8,13 @@ from scrapy_redis.pipelines import RedisPipeline
 from twisted.internet.threads import deferToThread
 from scrapy.exceptions import DropItem
 
-from .items import SpiderPpwItemTransfer, SpiderPpwItemRentOut, SpiderPpwItemRentIn
-from .constant.db import MysqlDatabase
+from .items.ganji import SpiderPpwItemTransfer, SpiderPpwItemRentOut, SpiderPpwItemRentIn
+from .items._58 import RentItem, TransferItem, LeaseItem
+from .common.db import MysqlDatabase
 
 
 class DropRedirectUrlPipeline(object):
     db = MysqlDatabase()
-
-    logger = logging.getLogger('PipeLine')
 
     def process_item(self, item, spider):
         city_code = item['city_code']
@@ -33,38 +26,52 @@ class DropRedirectUrlPipeline(object):
 
 
 class CustomRedisPipeline(RedisPipeline):
-    logger = logging.getLogger('PipeLine')
-
     db = MysqlDatabase()
     num = 0
 
     def process_item(self, item, spider):
-        print(format('    {}    '.format(self.num), '!^30s'))
-        self.distribute_item(item)
+        if self.before_handled(item):
+            self.distribute_item(item)
+            self.num += 1
+            print('[INFO]: {}'.format(self.num))
+            self.after_handled(item)
         return deferToThread(self._process_item, item, spider)
 
     def distribute_item(self, item):
-        self.num += 1
-        _item = self.handle_item(item)
-        if _item:
-            sql = self.format_spl(_item)
-            try:
-                self.db.insert_mysql(sql)
-                print('[INFO]: ')
-                if isinstance(item, SpiderPpwItemTransfer):
-                    self.handle_transfer_item(_item)
-                if isinstance(item, SpiderPpwItemRentOut):
-                    self.handle_rent_out_item(_item)
-                if isinstance(item, SpiderPpwItemRentIn):
-                    self.handle_rent_in_item(_item)
-            except Exception as e:
-                if isinstance(e, tuple):
-                    if 'Duplicate entry' in e[1]:
-                        self.db.redirect_urls.add(item['url'].strip('\''))
+        if isinstance(item, (TransferItem, RentItem, LeaseItem)):
+            self.handle_58_item(item)
+            if isinstance(item, TransferItem):
+                self._print(item, '58', '转店')
+            if isinstance(item, LeaseItem):
+                self._print(item, '58', '出租')
+            if isinstance(item, RentItem):
+                self._print(item, '58', '找店')
+        if isinstance(item, (SpiderPpwItemTransfer, SpiderPpwItemRentOut, SpiderPpwItemRentIn)):
+            self.handle_ganji_item(item)
+            if isinstance(item, SpiderPpwItemTransfer):
+                self._print(item, '赶集', '转店')
+            if isinstance(item, SpiderPpwItemRentOut):
+                self._print(item, '赶集', '出租')
+            if isinstance(item, SpiderPpwItemRentIn):
+                self._print(item, '赶集', '找店')
 
-    def handle_item(self, item):
+    def before_handled(self, item):
         if any(map(lambda x: x in item['title'], self.db.title_filter)):
             return None
+        else:
+            return item
+
+    def after_handled(self, item):
+        sql, value = self.format_spl(item)
+        try:
+            self.db.insert(sql, value)
+        except Exception as e:
+            if isinstance(e, tuple):
+                if 'Duplicate entry' in e[1]:
+                    self.db.redirect_urls.add(item['url'].strip('\''))
+
+    def handle_ganji_item(self, item):
+        item['source'] = '2'
         if item['area'] != '面议':
             item['area'] = item['area'][:-1]
         item['create_time'] = self.format_time(item['create_time'])
@@ -73,56 +80,39 @@ class CustomRedisPipeline(RedisPipeline):
         if item['citycode']:
             if item['tel'] in self.db.mobile_map.get(item['citycode']):
                 return None
-        item['detail'] = self.format_str(item['detail'])
-        item['title'] = self.format_str(item['title'])
-        item['url'] = self.format_str(item['url'])
-        item['contact'] = self.format_str(item['contact'])
         if item['suit'] is not None:
             if item['suit'] == '':
                 item['suit'] = 'NULL'
-            else:
-                item['suit'] = self.format_str(item['suit'])
         if item['rent'] == '面议':
             item['rent'] = 0
-        if item['shop_name']:
-            item['shop_name'] = self.format_str(item['shop_name'])
-        if item['address']:
-            item['address'] = self.format_str(item['address'])
-        if item['business_center']:
-            item['business_center'] = self.format_str(item['business_center'])
         if item['img'] is not None:
             if item['img'] == '':
                 item['img'] = 'NULL'
-            else:
-                item['img'] = self.format_str(item['img'])
-        if item['industry_type']:
-            item['industry_type'] = self.format_str(item['industry_type'])
-        if item['district']:
-            item['district'] = self.format_str(item['district'])
         if item['shop_state']:
             item['shop_state'] = self.db.shop_state_map.get(item['shop_state'], 0)
+        item['collect_time'] = self.collect_time()
+        return item
+
+    def handle_58_item(self, item):
+        item['collect_time'] = self.collect_time()
         return item
 
     @staticmethod
-    def handle_transfer_item(item):
-        print('#' * 5, '[转店]', item['citycode'], item['create_time'], item['url'])
+    def collect_time():
+        time = datetime.now() + timedelta(hours=8)
+        return time.strftime('%Y-%m-%d %H:%M:%S')
+
+    @staticmethod
+    def _print(item, source, type_):
+        print(format(source, "^5"), '-->[{}]'.format(type_), item['citycode'], item['create_time'], item['url'])
         return item
 
     @staticmethod
-    def handle_rent_out_item(item):
-        print('*' * 5, '[出租]', item['citycode'], item['create_time'], item['url'])
-        return item
+    def now():
+        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     @staticmethod
-    def handle_rent_in_item(item):
-        print('@' * 5, '[找店]', item['citycode'], item['create_time'], item['url'])
-        return item
-
-    @staticmethod
-    def date_time():
-        return datetime.now().strftime('%H:%M:%S')
-
-    def format_time(self, time_str):
+    def format_time(time_str):
         if ':' in time_str:
             year = datetime.now().year
             day, hour = time_str.split(' ')
@@ -133,7 +123,7 @@ class CustomRedisPipeline(RedisPipeline):
             day = time_str
             hour = '00:00'
         _time = "{day} {hour}:00".format(day=day, hour=hour)
-        return self.format_str(_time)
+        return _time
 
     @staticmethod
     def format_tel(tel):
@@ -146,10 +136,10 @@ class CustomRedisPipeline(RedisPipeline):
     @staticmethod
     def format_spl(item):
         order = OrderedDict()
+        item_fields = len(item)
         for k, v in item._values.items():
             order[k] = str(v)
-        order['source'] = '2'
         field = ','.join(list(order.keys()))
         values = ','.join(list(order.values()))
-        sql = 'INSERT INTO spiderdb( ' + field + ') VALUES (' + values + ');'.replace('面议', 'NULL')
-        return sql
+        sql = 'INSERT INTO spiderdb ( ' + field + ') VALUES (' + ','.join('%s' * item_fields) + ');'
+        return sql, values.replace('面议', 'NULL')

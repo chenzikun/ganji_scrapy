@@ -26,7 +26,7 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 5
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # CONCURRENT_REQUESTS_PER_IP = 16
@@ -46,7 +46,8 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Enable or disable spider middlewares
 SPIDER_MIDDLEWARES = {
-    'spider_ppw.middlewares.spider.CustomHttpErrorMiddleware': 101,
+    'spider_ppw.middlewares.spider.CustomHttpErrorMiddleware': 11,
+    # 'scrapy.spidermiddlewares.httperror': 110,
     'spider_ppw.middlewares.spider.CustomUrlDropMiddleware': 10,
 }
 
@@ -101,8 +102,7 @@ ITEM_PIPELINES = {
 # LOG_ENABLED默认为True
 # LOG_ENABLED = False
 # log_level， CRITICAL、 ERROR、WARNING、INFO、DEBUG
-LOG_LEVEL = 'ERROR'
-
+LOG_LEVEL = 'DEBUG'
 
 # redis
 # 启用Redis调度存储请求队列
@@ -120,5 +120,5 @@ MYSQL_CONFIG = {'host': '192.168.1.158',
                 'charset': 'utf8mb4'
                 }
 
-PROXY = 'http://58.221.67.11:16816'
+PROXY = 'http://211.149.244.67:16816'
 PROXY_USER_PASSWORD = 'chen_zikun:sja9s7z5'

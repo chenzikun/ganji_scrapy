@@ -9,13 +9,13 @@ from scrapy.conf import settings
 from scrapy.exceptions import IgnoreRequest
 
 # agent和ip池
-from ..constant.useragent import AGENTS
-from ..constant.db import RedisDatabase
-from ..constant.db import MysqlDatabase
+from ..common.useragent import AGENTS
+from ..common.db import RedisDatabase
+from ..common.db import MysqlDatabase
 
-logger = logging.getLogger(__name__)
 
 redis_db = RedisDatabase()
+
 db = MysqlDatabase()
 
 

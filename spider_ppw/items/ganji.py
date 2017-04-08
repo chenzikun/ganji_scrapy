@@ -1,20 +1,6 @@
-# -*- coding: utf-8 -*-
-
-# Define here the models for your scraped items
-#
-# See documentation in:
-# http://doc.scrapy.org/en/latest/topics/items.html
-
 import scrapy
 
-
-# 赶集网
-class CustomItem(scrapy.Item):
-    def __getitem__(self, key):
-        if key in self.fields:
-            return self._values[key]
-        else:
-            return None
+from . import CustomItem
 
 
 class SpiderPpwItem(CustomItem):
@@ -24,6 +10,8 @@ class SpiderPpwItem(CustomItem):
     type = scrapy.Field()
     # 发布时间
     create_time = scrapy.Field()
+    # 收集时间
+    collect_time = scrapy.Field()
     # 标题
     title = scrapy.Field()
     # 联系人
@@ -32,6 +20,8 @@ class SpiderPpwItem(CustomItem):
     tel = scrapy.Field()
     # 详情URL
     url = scrapy.Field()
+    # source
+    source = scrapy.Field()
 
 
 class SpiderPpwItemTransfer(SpiderPpwItem):

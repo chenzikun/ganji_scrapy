@@ -10,8 +10,10 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from scrapy.crawler import CrawlerProcess
 from scrapy.conf import settings
 from spider_ppw.spiders.ganji import GanJiSpider
-from spider_ppw.constant import proxy_verify
-from spider_ppw.constant import ip_pond
+from spider_ppw.spiders._58 import _58_Spider
+
+from spider_ppw.common import proxy_verify
+from spider_ppw.common import ip_pond
 
 
 class Main(object):
@@ -28,6 +30,7 @@ class Main(object):
 
         self.process = CrawlerProcess(settings)
         self.process.crawl(GanJiSpider)
+        self.process.crawl(_58_Spider)
 
     @staticmethod
     def print_(text):
@@ -51,12 +54,12 @@ class Main(object):
 
     def crawl(self):
         self.crawl_num += 1
-        self.process.stop()
+        # self.process.stop()
         self.process.start()
         self.print_('第{}次进行主爬虫程序: {}'.format(self.crawl_num, self.date_time()))
 
 
-if __name__ == '__main__':
+if __name__ == 'main__':
     main = Main()
     sched = BlockingScheduler()
     # sched.add_job(main.refresh_ip_pond, trigger='cron', minute="*/60", hour="7-23", day="*")
@@ -69,6 +72,10 @@ if __name__ == '__main__':
         print(e)
         main.print_('计划任务终止 : {}'.format(main.date_time()))
 
+
+if __name__ == '__main__':
+    main = Main()
+    main.crawl()
 
 @register
 def _at_exit():

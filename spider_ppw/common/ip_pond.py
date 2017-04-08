@@ -77,8 +77,8 @@ class IpPondManager(object):
         self.free_proxy = GetFreeProxy()
         self.verify_hook = VerifyProxy()
 
-        self.target_list = [self.free_proxy.free_proxy_second_source(), self.free_proxy.free_proxy_third_source(),
-                            self.free_proxy.free_proxy_fourth_source(), self.free_proxy.free_proxy_fifth_source()]
+        self.target_list = [self.free_proxy.free_proxy_second_source, self.free_proxy.free_proxy_third_source,
+                            self.free_proxy.free_proxy_fourth_source, self.free_proxy.free_proxy_fifth_source]
 
         self.num = 0
 

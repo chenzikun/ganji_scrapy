@@ -1,10 +1,9 @@
-import logging
-
+from scrapy.spidermiddlewares.httperror import HttpError
 # agent和ip池
-from ..constant.db import RedisDatabase
+from ..common.db import RedisDatabase
+from ..common.utils import Util
 
-logger = logging.getLogger(__name__)
-
+util = Util()
 redis_db = RedisDatabase()
 
 
@@ -15,18 +14,24 @@ class CustomUrlDropMiddleware(object):
         url = response.url
         sub_domain = url.split('//')[1].split('.')[0]
         if sub_domain == 'w':
-            raise Exception
+            raise HttpError(response, )
 
 
 class CustomHttpErrorMiddleware(object):
 
-    @staticmethod
-    def process_spider_input(response, spider):
+
+    def process_spider_input(self, response, spider):
         if response.status == 404:
             urls_404 = redis_db.load('404')
             urls_404.append(response.request._url)
             redis_db.refresh_404_urls(urls_404)
-            raise Exception
+            raise HttpError(response, '404, 加入redis中去')
 
-
-
+    def process_spider_exception(self, response, exception, spider):
+        if isinstance(exception, HttpError):
+            util._404_logger.info(
+                "404, url已添加到redis数据库中", response.request._url
+            )
+            util._404_logger.info(
+                response.request._url
+            )
