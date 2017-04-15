@@ -18,8 +18,8 @@ class DropRedirectUrlPipeline(object):
 
     def process_item(self, item, spider):
         city_code = item['city_code']
-        if self.db.url_map.get(city_code, 0):
-            if item['url'] in self.db.url_map[city_code]:
+        if self.db.visited_urls.get(city_code, 0):
+            if item['url'] in self.db.visited_urls[city_code]:
                 self.db.redirect_urls.add(item['url'])
                 raise DropItem
         return item
@@ -30,7 +30,8 @@ class CustomRedisPipeline(RedisPipeline):
     num = 0
 
     def process_item(self, item, spider):
-        if self.before_handled(item):
+        item = self.before_handled(item)
+        if item:
             self.distribute_item(item)
             self.num += 1
             print('[INFO]: {}'.format(self.num))

@@ -55,19 +55,17 @@ class _58_Spider(Spider):
 
         # 详情页url
         for tr in dom('table.tbimg')('tr').items():
-            detail_url = tr('td.img')('a').attr('href')
-            if detail_url not in self.db.url_map[city_code]:
-                self.db.url_map[city_code].add(detail_url)
-                if detail_url not in self.redis_db.load('404'):
-                    if 'shengyizr' in response.request.url:
-                        yield Request(detail_url, callback=self.transfer_detail_page_parse)
-                    if 'shangpucz' in response.request.url:
-                        yield Request(detail_url, callback=self.rent_out_detail_page_parse)
-                    if 'shangpuqz' in response.request.url:
-                        yield Request(detail_url, callback=self.rent_in_detail_page_parse)
-            else:
-                self.db.url_map[city_code] = set()
-                self.db.url_map[city_code].add(detail_url)
+            detail_url = tr('.t')('a').attr('href')
+            if not self.db.visited_urls.get(city_code):
+                self.db.visited_urls[city_code] = set()
+            if detail_url not in self.db.visited_urls[city_code]:
+                self.db.visited_urls[city_code].add(detail_url)
+                if 'shengyizr' in response.request.url:
+                    yield Request(detail_url, callback=self.transfer_detail_page_parse)
+                if 'shangpucz' in response.request.url:
+                    yield Request(detail_url, callback=self.rent_out_detail_page_parse)
+                if 'shangpuqz' in response.request.url:
+                    yield Request(detail_url, callback=self.rent_in_detail_page_parse)
 
     def transfer_detail_page_parse(self, response):
         """采集转店详情页"""
@@ -149,9 +147,7 @@ class _58_Spider(Spider):
         item['sub_area'] = None
         item['minus_rent'] = None
         item['engaged'] = ''
-
-        p = re.compile(r'http:\/\/(.*)\.58\.com\/')
-        py = p.search(response.url).group(1)
+        py = response.url.split('://')[1].split('.')[0]
 
         if self.db.sub_domain_to_city_code_map_58.get(py):
             item['citycode'] = self.db.sub_domain_to_city_code_map_58.get(py)
@@ -236,8 +232,7 @@ class _58_Spider(Spider):
         item['minus_rent'] = None
         item['industry'] = None
 
-        p = re.compile(r'http:\/\/(.*)\.58\.com\/')
-        py = p.search(response.url).group(1)
+        py = response.url.split('://')[1].split('.')[0]
 
         if self.db.sub_domain_to_city_code_map_58.get(py):
             item['citycode'] = self.db.sub_domain_to_city_code_map_58.get(py)
@@ -317,8 +312,7 @@ class _58_Spider(Spider):
         item['cost_unit'] = None
         item['industry'] = None
 
-        p = re.compile(r'http:\/\/(.*)\.58\.com\/')
-        py = p.search(response.url).group(1)
+        py = response.url.split('://')[1].split('.')[0]
 
         if self.db.sub_domain_to_city_code_map_58.get(py):
             item['citycode'] = self.db.sub_domain_to_city_code_map_58.get(py)

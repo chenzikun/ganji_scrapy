@@ -24,7 +24,6 @@ class Main(object):
         self.verify_ip_pond_num = 0
         # 主爬虫运行计数
         self.crawl_num = 0
-
         self.ip_pond = ip_pond.IpPondManager()
         self.verify = proxy_verify.VerifyProxy()
 
@@ -59,12 +58,12 @@ class Main(object):
         self.print_('第{}次进行主爬虫程序: {}'.format(self.crawl_num, self.date_time()))
 
 
-if __name__ == 'main__':
+if __name__ == '__main__':
     main = Main()
     sched = BlockingScheduler()
     # sched.add_job(main.refresh_ip_pond, trigger='cron', minute="*/60", hour="7-23", day="*")
     # sched.add_job(main.test_ip_pond, trigger='cron', minute="*/20", hour="7-23", day="*")
-    sched.add_job(main.crawl, trigger='cron', minute="*/10", hour="7-23", day="*")
+    sched.add_job(main.crawl, trigger='cron', minute="*/15", hour="8-20", day="*")
     try:
         main.print_('开始计划任务: {}'.format(main.date_time()))
         sched.start()
@@ -73,9 +72,9 @@ if __name__ == 'main__':
         main.print_('计划任务终止 : {}'.format(main.date_time()))
 
 
-if __name__ == '__main__':
-    main = Main()
-    main.crawl()
+# if __name__ == '__main__':
+#     main = Main()
+#     main.crawl()
 
 @register
 def _at_exit():

@@ -66,19 +66,17 @@ class GanJiSpider(Spider):
             detail_url = dl('a').attr('href')
             if 'http' not in detail_url:
                 detail_url = self.domain_str.format(sub_domain) + detail_url
-            if self.db.url_map.get(city_code):
-                if detail_url not in self.db.url_map[city_code]:
-                    self.db.url_map[city_code].add(detail_url)
-                    if detail_url not in self.redis_db.load('404'):
-                        if '/a1c1/' in response.request.url:
-                            yield Request(detail_url, callback=self.transfer_detail_page_parse)
-                        if '/a1c2/' in response.request.url:
-                            yield Request(detail_url, callback=self.rent_out_detail_page_parse)
-                        if '/a1s2/' in response.request.url:
-                            yield Request(detail_url, callback=self.rent_in_detail_page_parse)
-            else:
-                self.db.url_map[city_code] = set()
-                self.db.url_map[city_code].add(detail_url)
+            if self.db.visited_urls.get(city_code):
+                self.db.visited_urls[city_code] = set()
+            if detail_url not in self.db.visited_urls[city_code]:
+                self.db.visited_urls[city_code].add(detail_url)
+                if detail_url not in self.redis_db.load('404'):
+                    if '/a1c1/' in response.request.url:
+                        yield Request(detail_url, callback=self.transfer_detail_page_parse)
+                    if '/a1c2/' in response.request.url:
+                        yield Request(detail_url, callback=self.rent_out_detail_page_parse)
+                    if '/a1s2/' in response.request.url:
+                        yield Request(detail_url, callback=self.rent_in_detail_page_parse)
 
     def transfer_detail_page_parse(self, response):
         """采集转店详情页"""

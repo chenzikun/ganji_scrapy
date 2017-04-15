@@ -11,7 +11,6 @@ from .cookies import get_cookie
 
 
 class MysqlDatabase(metaclass=Singleton):
-
     def __init__(self):
 
         # 装载城市字典
@@ -32,13 +31,13 @@ class MysqlDatabase(metaclass=Singleton):
             self.mobile_map[city].add(mobile)
 
         # 装载已经存在的urls字典
-        self.url_map = {}
+        self.visited_urls = {}
         sql = """select url, citycode from spiderdb where source in (1, 2)"""
         urls = self.query(sql)
         for url, citycode in urls:
-            if not self.url_map.get(citycode):
-                self.url_map[citycode] = set()
-            self.url_map[citycode].add(url)
+            if not self.visited_urls.get(citycode):
+                self.visited_urls[citycode] = set()
+            self.visited_urls[citycode].add(url)
 
         self.rent_unit_map = {"元/月": 0, "元/天": 1, "万元/年": 2, "元/平米/月": 3, "元/平米/天": 4}
 
@@ -80,7 +79,6 @@ class MysqlDatabase(metaclass=Singleton):
 
 
 class RedisDatabase(metaclass=Singleton):
-
     def __init__(self):
         # self.refresh_cookie()
         pass
